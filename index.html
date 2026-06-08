@@ -1,1 +1,79 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Мой Мобильный Кликер</title>
+    <style>
+        * { box-sizing: border-box; user-select: none; -webkit-user-select: none; touch-action: manipulation; }
+        body { margin: 0; padding: 0; width: 100vw; height: 100vh; background: linear-gradient(135deg, #1e1e2f, #111119); color: #ffffff; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: space-between; overflow: hidden; }
+        .header { text-align: center; margin-top: 40px; }
+        .score-title { font-size: 18px; color: #8a8cb5; text-transform: uppercase; letter-spacing: 2px; margin: 0; }
+        .score-value { font-size: 48px; font-weight: bold; color: #00ffcc; text-shadow: 0 0 20px rgba(0, 255, 204, 0.4); margin: 5px 0 0 0; }
+        .clicker-container { flex: 1; display: flex; align-items: center; justify-content: center; position: relative; width: 100%; }
+        .coin { width: 60vw; max-width: 250px; height: 60vw; max-height: 250px; background: radial-gradient(circle, #ffcc00, #ff9900); border-radius: 50%; box-shadow: 0 0 30px rgba(255, 153, 0, 0.6), inset 0 0 15px rgba(255, 255, 255, 0.6); border: 8px solid #fff; cursor: pointer; transition: transform 0.05s ease; display: flex; align-items: center; justify-content: center; font-size: 64px; }
+        .coin:active { transform: scale(0.92); }
+        .floating-text { position: absolute; font-size: 28px; font-weight: bold; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.5); pointer-events: none; animation: floatUp 0.6s ease-out forwards; }
+        @keyframes floatUp { 0% { opacity: 1; transform: translateY(0) scale(1); } 100% { opacity: 0; transform: translateY(-100px) scale(1.2); } }
+        .footer { width: 100%; padding: 20px; background: rgba(255, 255, 255, 0.03); border-top: 1px solid rgba(255, 255, 255, 0.05); border-radius: 24px 24px 0 0; display: flex; justify-content: center; }
+        .upgrade-btn { background: linear-gradient(90deg, #00ffcc, #00b3ff); border: none; color: #111119; padding: 15px 30px; font-size: 16px; font-weight: bold; border-radius: 12px; width: 100%; max-width: 300px; box-shadow: 0 4px 15px rgba(0, 255, 204, 0.3); }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <p class="score-title">Баланс монет</p>
+        <div class="score-value" id="score">0</div>
+    </div>
+    <div class="clicker-container" id="click-zone">
+        <div class="coin" id="coin">🌟</div>
+    </div>
+    <div class="footer">
+        <button class="upgrade-btn" id="upgrade-btn">Прокачать клик (Цена: 10)</button>
+    </div>
+    <script>
+        let score = parseInt(localStorage.getItem('clicker_score')) || 0;
+        let clickPower = parseInt(localStorage.getItem('clicker_power')) || 1;
+        let upgradeCost = parseInt(localStorage.getItem('clicker_cost')) || 10;
+        const scoreEl = document.getElementById('score');
+        const coinEl = document.getElementById('coin');
+        const clickZone = document.getElementById('click-zone');
+        const upgradeBtn = document.getElementById('upgrade-btn');
+        function updateUI() {
+            scoreEl.textContent = score;
+            upgradeBtn.textContent = `Прокачать клик +1 (Цена: ${upgradeCost})`;
+            localStorage.setItem('clicker_score', score);
+            localStorage.setItem('clicker_power', clickPower);
+            localStorage.setItem('clicker_cost', upgradeCost);
+        }
+        function handlePlaceClick(e) {
+            e.preventDefault();
+            const clientX = e.clientX || (e.touches && e.touches.clientX);
+            const clientY = e.clientY || (e.touches && e.touches.clientY);
+            if (!clientX || !clientY) return;
+            score += clickPower;
+            updateUI();
+            const floatText = document.createElement('div');
+            floatText.className = 'floating-text';
+            floatText.textContent = `+${clickPower}`;
+            floatText.style.left = `${clientX - 15}px`;
+            floatText.style.top = `${clientY - 20}px`;
+            clickZone.appendChild(floatText);
+            setTimeout(() => { floatText.remove(); }, 600);
+        }
+        coinEl.addEventListener('touchstart', handlePlaceClick, { passive: false });
+        coinEl.addEventListener('mousedown', handlePlaceClick);
+        upgradeBtn.addEventListener('click', () => {
+            if (score >= upgradeCost) {
+                score -= upgradeCost;
+                clickPower += 1;
+                upgradeCost = Math.round(upgradeCost * 1.5);
+                updateUI();
+            } else {
+                alert('Не хватает монет!');
+            }
+        });
+        updateUI();
+    </script>
+</body>
+</html>
 
